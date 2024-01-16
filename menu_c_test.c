@@ -7,16 +7,47 @@ ret_code run_c_test(int argc, char **argv)
     return MENU_RET_SUCCESS;
 }
 
-extern int crc32_main(char *data);
+extern int crc32_main(char *data, int length);
 ret_code run_crc32(int argc, char **argv)
 {
-    if (argc < 4) {
-        printf("Usage: %s \"some string\"\n", argv[0]);
-        return -1;
+    char mic_string[] = "123456789";
+    char mic_test1[32];
+    char mic_test2[32];
+    char mic_test3[30];
+    char mic_test4[32];
+
+    // if (argc < 4) {
+    //     printf("Usage: %s \"some string\"\n", argv[0]);
+    //     return -1;
+    // }
+
+    // return crc32_main(argv[3]);
+    int length;
+
+    length = sizeof(mic_string) - 1;
+    crc32_main(mic_string, length);
+
+    length = sizeof(mic_test1);
+    memset(mic_test1, 0x00, length);
+    crc32_main(mic_test1, length);
+
+    length = sizeof(mic_test2);
+    memset(mic_test2, 0xFF, length);
+    crc32_main(mic_test2, length);
+
+    length = sizeof(mic_test3);
+    for (int i = 0; i < length; i++) {
+        mic_test3[i] = i;
+        // printf("%2x ", mic_test3[i]);
     }
+    // printf("\n");
+    crc32_main(mic_test3, length);
 
-    return crc32_main(argv[3]);
-
+    length = sizeof(mic_test4);
+    for (int i = 0; i < length; i++) {
+        mic_test4[i] = length - i - 1;
+    }
+    crc32_main(mic_test4, length);
 }
 
 extern int crc_table_main(void);
