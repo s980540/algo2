@@ -47,7 +47,9 @@
 
 #define TB_FILE   "crctable.out"
 #define TB_WIDTH  4
-#define TB_POLY   0x04C11DB7L
+// #define TB_POLY   0x04C11DB7L
+#define TB_POLY   0x1EDC6F41L // CRC-32C (Castagnoli)
+
 #define TB_REVER  TRUE
 
 /******************************************************************************/
