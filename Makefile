@@ -27,7 +27,8 @@ BFLAGS   = -static -lpthread -g -o
 
 .PHONY: all clean
 
-all: clean $(BIN)
+# all: clean $(BIN)
+all: $(BIN)
 
 clean:
 	${RM} $(OBJS)
