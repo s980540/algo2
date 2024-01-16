@@ -32,23 +32,26 @@ int gov_moi_reip_main(void)
 
     //
     pos = ftell(fp_r);
-    while (fgets(str_buf, STR_BUF_SIZE, fp_r) != NULL)
+    while (fgets(str_buf, STR_BUF_SIZE, fp_r) != NULL) {
         fline++;
+    }
     fseek(fp_r, pos, SEEK_SET);
 
     //
     fline--;
-    if (fgets(str_buf, STR_BUF_SIZE, fp_r) == NULL)
+    if (fgets(str_buf, STR_BUF_SIZE, fp_r) == NULL) {
         goto exit;
+    }
 
     printf("%s", str_buf);
-#if 1
+    #if 1
     fprintf(fp_w, "%s", str_buf);
 
     //
     while (fline--) {
-        if (fgets(str_buf, STR_BUF_SIZE, fp_r) == NULL)
+        if (fgets(str_buf, STR_BUF_SIZE, fp_r) == NULL) {
             goto exit;
+        }
 
         printf("%s", str_buf);
 
@@ -87,7 +90,8 @@ int gov_moi_reip_main(void)
                 // printf("%d/%d/%d,", (y <= 1911 ? y + 1911 : y), m, d);
                 fprintf(fp_w, "%d/%d/%d,", (y <= 1911 ? y + 1911 : y), m, d);
 
-            } else {
+            }
+            else {
                 // printf("%s,", p);
                 fprintf(fp_w, "%s,", p);
             }
@@ -95,7 +99,7 @@ int gov_moi_reip_main(void)
             p = r + 1;
         }
     }
-#endif
+    #endif
 exit:
     fclose(fp_r);
     fclose(fp_w);

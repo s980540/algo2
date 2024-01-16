@@ -7,8 +7,7 @@
 #include <unistd.h>
 #include <time.h>
 
-typedef struct _thread_info_t
-{
+typedef struct _thread_info_t {
     pthread_t thread;
     int thread_id;
     long sleep_nsec;

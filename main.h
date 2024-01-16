@@ -5,8 +5,7 @@
 
 #include <pthread.h>
 
-typedef struct _foo_ts
-{
+typedef struct _foo_ts {
     pthread_mutex_t mutex;
     int val;
 } foo_ts;

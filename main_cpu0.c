@@ -79,7 +79,7 @@ void *main_cpu0(void *para)
             ret = nanosleep(&request, NULL);
             if (ret == -1)
                 printf("nanosleep error, errno=%d [%s]\n",
-                    request.tv_nsec, errno, strerror(errno));
+                       request.tv_nsec, errno, strerror(errno));
         }
     }
 

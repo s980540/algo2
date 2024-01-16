@@ -2,9 +2,9 @@
 #define TYPES_H
 
 #ifndef __GNUC__
-#define __asm__         asm
-#define __typeof__      typeof
-#define __inline__      inline
+    #define __asm__         asm
+    #define __typeof__      typeof
+    #define __inline__      inline
 #endif
 
 typedef unsigned char u8;
@@ -40,8 +40,8 @@ typedef int ret_code;
 #define NULL        ((void *)0)
 
 enum {
-        false = 0,
-        true  = 1
+    false = 0,
+    true  = 1
 };
 
 enum {
@@ -70,8 +70,8 @@ enum {
  *
  */
 #define _container_of(ptr, type, member) ({ \
-    const typeof( ((type *)0)->member ) *__mptr = (ptr); \
-    (type *)( (char *)__mptr - _offsetof(type, member) );})
+        const typeof( ((type *)0)->member ) *__mptr = (ptr); \
+        (type *)( (char *)__mptr - _offsetof(type, member) );})
 
 #define U64_MASK                    (0xFFFFFFFFFFFFFFFF)
 

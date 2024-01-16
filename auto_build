@@ -1,0 +1,2 @@
+./Astyle/bin/astyle.exe --options=./_astylerc -R ./*.c,*.h --exclude=AStyle --formatted
+make

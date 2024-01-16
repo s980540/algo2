@@ -44,10 +44,11 @@ static char _func_name[MENU_MAX_FUNC_NAME_LEN];
 static int _memcnt = 0;
 static int _config_cnt = 0;
 
-ret_code menu_register(menu_option_t **menu_opt , const menu_option_t *menu_config)
+ret_code menu_register(menu_option_t **menu_opt, const menu_option_t *menu_config)
 {
-    if (menu_opt == NULL)
+    if (menu_opt == NULL) {
         return MENU_RET_FAIL;
+    }
 
     if (_memcnt == 0) {
         _config_cnt = 1;
@@ -55,14 +56,16 @@ ret_code menu_register(menu_option_t **menu_opt , const menu_option_t *menu_conf
         (*menu_opt) = malloc(sizeof(menu_option_t) * _memcnt);
         memcpy((*menu_opt), menu_config, sizeof(menu_option_t));
         memset((*menu_opt) + _config_cnt, 0, sizeof(menu_option_t) * (_memcnt - _config_cnt));
-    } else {
+    }
+    else {
         memcpy((*menu_opt) + _config_cnt++, menu_config, sizeof(menu_option_t));
     }
 
     if (_memcnt == _config_cnt) {
 
-        if (_memcnt == (1UL << 31))
+        if (_memcnt == (1UL << 31)) {
             return MENU_RET_FAIL;
+        }
 
         _memcnt *= 2;
         (*menu_opt) = realloc((*menu_opt), sizeof(menu_option_t) * _memcnt);
@@ -89,19 +92,22 @@ char *menu_get_prog_name(const char *s)
     /* Strip off trailing nonsense. */
     n = strlen(p);
     if ((n > 4)
-    && ((strcmp(&p[n - 4], ".exe") == 0) || (strcmp(&p[n - 4], ".EXE") == 0)))
+        && ((strcmp(&p[n - 4], ".exe") == 0) || (strcmp(&p[n - 4], ".EXE") == 0))) {
         n -= 4;
+    }
 
     /* Copy over the prog name, in lowercae. */
-    if (n > sizeof(_func_name) - 1)
+    if (n > sizeof(_func_name) - 1) {
         n = sizeof(_func_name) - 1;
+    }
 
-    for (q = _func_name, i = 0; i < n; i++, p++)
+    for (q = _func_name, i = 0; i < n; i++, p++) {
         *q++ = isupper(*p) ? tolower(*p) : *p;
+    }
 
     *q = '\0';
 
-    return(_func_name);
+    return (_func_name);
 }
 
 /**
@@ -116,18 +122,22 @@ ret_code menu_opt_init(int argc, char **argv, int i)
 {
     const menu_option_t *opt;
 
-    if (argc < i)
+    if (argc < i) {
         return MENU_RET_INVALID_ARG;
+    }
 
     /* Initialize related variable in this module */
-    if (argc > 0)
+    if (argc > 0) {
         m_arg_max = argc;
+    }
 
-    if (argv != NULL)
+    if (argv != NULL) {
         m_arg_val = argv;
+    }
 
-    if (i >= 0)
+    if (i >= 0) {
         m_arg_idx = i;
+    }
 
     m_arg_typ = 0;
 
@@ -166,15 +176,16 @@ ret_code menu_opt_check(const menu_option_t *menu_opt)
   * @retval None
   */
 ret_code menu_opt_init2(
-    int argc,
-    int argc_min,
-    char **argv,
-    const menu_option_t *menu_opt)
+            int argc,
+            int argc_min,
+            char **argv,
+            const menu_option_t *menu_opt)
 {
     const menu_option_t *opt;
 
-    if (argc < argc_min)
+    if (argc < argc_min) {
         return MENU_RET_INVALID_ARG;
+    }
 
     /* Initialize related variable in this module */
     m_arg_max = argc;
@@ -205,29 +216,29 @@ ret_code menu_opt_init2(
 
         /* Check if arg type is correct */
         switch (opt->arg_type) {
-        case 0:
-        case '-':
-        case 'a':
-        case 'r':
-        case 'g':
-        case '/':
-        case '<':
-        case '>':
-        case 'E':
-        case 'F':
-        case 'M':
-        case 'U':
-        case 'f':
-        case 'l':
-        case 'n':
-        case 'p':
-        case 's':
-        case 'u':
-        case 'c':
-            break;
+            case 0:
+            case '-':
+            case 'a':
+            case 'r':
+            case 'g':
+            case '/':
+            case '<':
+            case '>':
+            case 'E':
+            case 'F':
+            case 'M':
+            case 'U':
+            case 'f':
+            case 'l':
+            case 'n':
+            case 'p':
+            case 's':
+            case 'u':
+            case 'c':
+                break;
 
-        default:
-            return MENU_RET_INVALID_ARG_TYPE;
+            default:
+                return MENU_RET_INVALID_ARG_TYPE;
         }
 
         /* Make sure there are no duplicates. */
@@ -269,33 +280,37 @@ ret_code menu_get_char(void)
             // debug
             printf("Ctrl + C!\n");
             return MENU_RET_EOF;
-        } else {
+        }
+        else {
             m_char_buf[i++] = c;
         }
     }
 
     /* Convert string from console to _argv_buf[] */
-    for (i = 0, p = m_char_buf, m_arg_val = m_argv_buf; i < 16; ) {
+    for (i = 0, p = m_char_buf, m_arg_val = m_argv_buf; i < 16;) {
 
         if (p == NULL || *p == '\0') {
             break;
         }
 
         /* Skip all space before the next command */
-        while (*p == ' ')
+        while (*p == ' ') {
             p++;
+        }
 
         m_argv_buf[i] = p;
 
-        if ((p = strchr(p, ' ')) != NULL)
+        if ((p = strchr(p, ' ')) != NULL) {
             *p++ = '\0';
+        }
 
         i++;
     }
 
     /* Clean up next cmd buffer to indicate no more cmd here */
-    if (i < 16)
+    if (i < 16) {
         m_argv_buf[i] = NULL;
+    }
 
     /*
      * Because the first element of _argv_buf is not the prog name,
@@ -307,10 +322,10 @@ ret_code menu_get_char(void)
 }
 
 ret_code menu_opt_process(
-    int argc,
-    char **argv,
-    const char *func_name,
-    const menu_option_t *menu_opt)
+            int argc,
+            char **argv,
+            const char *func_name,
+            const menu_option_t *menu_opt)
 {
     MENU_RET_CODE ret;
 
@@ -318,25 +333,29 @@ ret_code menu_opt_process(
     //     return MENU_RET_INVALID_ARG;
 
     char *arg_val = menu_get_argv_inc(NULL, NULL);
-    if (arg_val == NULL)
+    if (arg_val == NULL) {
         return MENU_RET_INVALID_ARG;
+    }
 
-#if (CONFIG_MENU_OPT_DEBUG_MESSAGE)
+    #if (CONFIG_MENU_OPT_DEBUG_MESSAGE)
     printf("m_arg_val ::%s\n", arg_val, menu_opt->name);
-#endif
+    #endif
 
     if ((strcmp(arg_val, "help") == 0) || (strcmp(arg_val, "--help") == 0)) {
         menu_func_help(func_name, menu_opt);
         return MENU_RET_SUCCESS;
-    } else {
+    }
+    else {
         for (; menu_opt->name; menu_opt++) {
             /* If not this option, move on to the next one. */
-            if (strcmp(arg_val, menu_opt->name) != 0)
+            if (strcmp(arg_val, menu_opt->name) != 0) {
                 continue;
+            }
 
             /* Excute associate oper */
-            if (menu_opt->oper)
+            if (menu_opt->oper) {
                 ret = menu_opt->oper(argc, argv);
+            }
 
             return ret;
         }
@@ -346,119 +365,119 @@ ret_code menu_opt_process(
 }
 
 ret_code menu_get_opt_code(
-    int *opt_code,
-    const menu_option_t *menu_opt
-    )
+            int *opt_code,
+            const menu_option_t *menu_opt
+)
 {
-//     const menu_option_t *opt;
-//     char *argv;
-//     int ival;
-//     long lval;
-//     unsigned long ulval;
+    //     const menu_option_t *opt;
+    //     char *argv;
+    //     int ival;
+    //     long lval;
+    //     unsigned long ulval;
 
-//     // m_param = NULL;
-//     // m_param = 0;
-//     m_para_cnt = 0;
+    //     // m_param = NULL;
+    //     // m_param = 0;
+    //     m_para_cnt = 0;
 
-//     /* Look at current arg; at the end of the list? */
-//     if ((argv = m_arg_val[m_arg_idx++]) == NULL) {
-//         return MENU_RET_EOF;
-//     }
+    //     /* Look at current arg; at the end of the list? */
+    //     if ((argv = m_arg_val[m_arg_idx++]) == NULL) {
+    //         return MENU_RET_EOF;
+    //     }
 
-// #if (CONFIG_MENU_OPT_DEBUG_MESSAGE)
-//     /* Use for debugging */
-//     printf("m_arg_val ::%s\n", argv);
-// #endif
+    // #if (CONFIG_MENU_OPT_DEBUG_MESSAGE)
+    //     /* Use for debugging */
+    //     printf("m_arg_val ::%s\n", argv);
+    // #endif
 
-//     // /* If word doesn't start with a -, we're done. */
-//     // if (*p != '-' && *p != '-') {
-//     //     return MENU_RET_EOF;
-//     // }
+    //     // /* If word doesn't start with a -, we're done. */
+    //     // if (*p != '-' && *p != '-') {
+    //     //     return MENU_RET_EOF;
+    //     // }
 
-//     // /* Hit "--"? We're done. */
-//     // if (strcmp(p, "--") == 0 || strcmp(p, "##") == 0) {
-//     //     return MENU_RET_EOF;
-//     // }
+    //     // /* Hit "--"? We're done. */
+    //     // if (strcmp(p, "--") == 0 || strcmp(p, "##") == 0) {
+    //     //     return MENU_RET_EOF;
+    //     // }
 
-//     // /* Allow -mmm and --mmm */
-//     // if (*++p == '-' || *p == '-') {
-//     //     p++;
-//     // }
+    //     // /* Allow -mmm and --mmm */
+    //     // if (*++p == '-' || *p == '-') {
+    //     //     p++;
+    //     // }
 
-//     // /* If we have --flag=foo, snip it off. */
-//     // if ((m_param = strchr(p, '=')) != NULL)
-//     //     *m_param++ = '\0';
+    //     // /* If we have --flag=foo, snip it off. */
+    //     // if ((m_param = strchr(p, '=')) != NULL)
+    //     //     *m_param++ = '\0';
 
-//     for (opt = menu_opt; opt->name; opt++) {
-//         /* If not this option, move on to the next one. */
-//         if (strcmp(argv, opt->name) != 0)
-//             continue;
+    //     for (opt = menu_opt; opt->name; opt++) {
+    //         /* If not this option, move on to the next one. */
+    //         if (strcmp(argv, opt->name) != 0)
+    //             continue;
 
-//         /* If it doesn't take a value, make sure none was given. */
-//         if (opt->arg_type == 0 || opt->arg_type == '-') {
-//             // if (m_param)
-//             //     return MENU_RET_INVALID_ARG_TYPE;
+    //         /* If it doesn't take a value, make sure none was given. */
+    //         if (opt->arg_type == 0 || opt->arg_type == '-') {
+    //             // if (m_param)
+    //             //     return MENU_RET_INVALID_ARG_TYPE;
 
-//             *opt_code = opt->code;
-//             m_arg_typ = 0;
+    //             *opt_code = opt->code;
+    //             m_arg_typ = 0;
 
-//             return MENU_RET_SUCCESS;
-//         }
+    //             return MENU_RET_SUCCESS;
+    //         }
 
-//         /* Want a value; get the next param if =foo not use. */
-//         // if (m_param == NULL) {
-//             if (m_arg_val[m_arg_idx] == NULL)
-//                 return MENU_RET_INVALID_ARG;
-//             // else
-//             //     m_param_idx = m_arg_idx++;
-//                 // m_param = m_arg_val[m_arg_idx++];
-//         // }
+    //         /* Want a value; get the next param if =foo not use. */
+    //         // if (m_param == NULL) {
+    //             if (m_arg_val[m_arg_idx] == NULL)
+    //                 return MENU_RET_INVALID_ARG;
+    //             // else
+    //             //     m_param_idx = m_arg_idx++;
+    //                 // m_param = m_arg_val[m_arg_idx++];
+    //         // }
 
-//         /* Syntax-check value. */
-//         switch (opt->arg_type) {
-//         default:
-//         case 's':
-//         case 'a':
-//             m_arg_typ = opt->arg_type;
-//             m_para_cnt = 1;
-//             break;
+    //         /* Syntax-check value. */
+    //         switch (opt->arg_type) {
+    //         default:
+    //         case 's':
+    //         case 'a':
+    //             m_arg_typ = opt->arg_type;
+    //             m_para_cnt = 1;
+    //             break;
 
-//         case 'r':
-//             m_arg_typ = opt->arg_type;
-//             m_para_cnt = 2;
-//             break;
+    //         case 'r':
+    //             m_arg_typ = opt->arg_type;
+    //             m_para_cnt = 2;
+    //             break;
 
-//         case 'g':
-//             m_arg_typ = opt->arg_type;
-//             m_para_cnt = 3;
-//             break;
+    //         case 'g':
+    //             m_arg_typ = opt->arg_type;
+    //             m_para_cnt = 3;
+    //             break;
 
-//         case '/':
-//         case '>':
-//         case 'p':
-//         case 'n':
-//         case 'M':
-//         case 'U':
-//         case 'l':
-//         case 'u':
-//         case 'c':
-//         case 'E':
-//         case 'F':
-//         case 'f':
-//             return MENU_RET_INVALID_ARG_TYPE;
-//         }
+    //         case '/':
+    //         case '>':
+    //         case 'p':
+    //         case 'n':
+    //         case 'M':
+    //         case 'U':
+    //         case 'l':
+    //         case 'u':
+    //         case 'c':
+    //         case 'E':
+    //         case 'F':
+    //         case 'f':
+    //             return MENU_RET_INVALID_ARG_TYPE;
+    //         }
 
-//         *opt_code = opt->code;
+    //         *opt_code = opt->code;
 
-//         return MENU_RET_SUCCESS;
-//     }
+    //         return MENU_RET_SUCCESS;
+    //     }
 
     return MENU_RET_UNKOWN_CMD;
 }
 
 ret_code menu_func_help(
-    const char *func_name,
-    const menu_option_t *menu_opt)
+            const char *func_name,
+            const menu_option_t *menu_opt)
 {
     const menu_option_t *opt;
     int i;
@@ -470,8 +489,9 @@ ret_code menu_func_help(
     for (opt = menu_opt; opt->name; opt++) {
         i = 2 + strlen(opt->name);
 
-        if (opt->arg_type != '-')
+        if (opt->arg_type != '-') {
             i += 1 + strlen(argtype2str(opt));
+        }
 
         if (i < MENU_FUNC_MAX_HELP_STR_LEN && i > w) {
             w = i;
@@ -479,7 +499,7 @@ ret_code menu_func_help(
     }
 
     printf("\nUsage: %s [options]\n\nValid options are:\n",
-            func_name ? func_name : "");
+           func_name ? func_name : "");
 
     for (opt = menu_opt; opt->name; opt++) {
         help_str = opt->help_str ? opt->help_str : "(No additional info)";
@@ -493,10 +513,12 @@ ret_code menu_func_help(
         *p++ = ' ';
         // *p++ = '-';
 
-        if (opt->name[0])
+        if (opt->name[0]) {
             p += strlen(strcpy(p, opt->name));
-        else
+        }
+        else {
             *p++ = '*';
+        }
 
         if (opt->arg_type != '-') {
             *p++ = ' ';
@@ -523,51 +545,51 @@ ret_code menu_func_help(
 static const char *argtype2str(const menu_option_t *opt)
 {
     switch (opt->arg_type) {
-    case 0:
-    case '-':
-        return("");
+        case 0:
+        case '-':
+            return ("");
 
-    case 'a':
-        return("val");
+        case 'a':
+            return ("val");
 
-    case '/':
-        return("dentry");
+        case '/':
+            return ("dentry");
 
-    case '<':
-        return("infile");
+        case '<':
+            return ("infile");
 
-    case '>':
-        return("outfile");
+        case '>':
+            return ("outfile");
 
-    case 'p':
-        return("+int");
+        case 'p':
+            return ("+int");
 
-    case 'n':
-        return("int");
+        case 'n':
+            return ("int");
 
-    case 'l':
-        return("long");
+        case 'l':
+            return ("long");
 
-    case 'u':
-        return("ulong");
+        case 'u':
+            return ("ulong");
 
-    case 'E':
-        return("PEM|DER|ENGINE");
+        case 'E':
+            return ("PEM|DER|ENGINE");
 
-    case 'F':
-        return("PEM|DER");
+        case 'F':
+            return ("PEM|DER");
 
-    case 'f':
-        return("format");
+        case 'f':
+            return ("format");
 
-    case 'M':
-        return("intmax");
+        case 'M':
+            return ("intmax");
 
-    case 'U':
-        return("uintmax");
+        case 'U':
+            return ("uintmax");
     }
 
-    return("[args]");
+    return ("[args]");
 }
 
 void *menu_get_arg(void *result, arg_convert_func_t convert)
@@ -579,9 +601,11 @@ void *menu_get_arg(void *result, arg_convert_func_t convert)
 
     if (convert != NULL) {
         return convert(result, m_arg_val[m_arg_idx]);
-    } else {
-        if (result != NULL)
+    }
+    else {
+        if (result != NULL) {
             result = m_arg_val[m_arg_idx];
+        }
 
         return m_arg_val[m_arg_idx];
     }
@@ -594,11 +618,13 @@ void *menu_get_argv_inc(void *result, arg_convert_func_t convert)
         return NULL;
     }
 
-    if (convert != NULL)
+    if (convert != NULL) {
         return convert(result, m_arg_val[m_arg_idx++]);
+    }
     else {
-        if (result != NULL)
+        if (result != NULL) {
             result = m_arg_val[m_arg_idx];
+        }
 
         return m_arg_val[m_arg_idx++];
     }
@@ -618,11 +644,13 @@ void *menu_get_arg_idx(int index, void *result, arg_convert_func_t convert)
         return NULL;
     }
 
-    if (convert != NULL)
+    if (convert != NULL) {
         return convert(result, m_arg_val[m_param_idx + index]);
+    }
     else {
-        if (result != NULL)
+        if (result != NULL) {
             result = m_arg_val[m_param_idx + index];
+        }
 
         return m_arg_val[m_param_idx + index];
     }
@@ -642,11 +670,13 @@ void *menu_get_arg_idx_inc(int index, void *result, arg_convert_func_t convert)
         return NULL;
     }
 
-    if (convert != NULL)
+    if (convert != NULL) {
         return convert(result, m_arg_val[m_arg_idx++ + index]);
+    }
     else {
-        if (result != NULL)
+        if (result != NULL) {
             result = m_arg_val[m_arg_idx + index];
+        }
 
         return m_arg_val[m_arg_idx++ + index];
     }

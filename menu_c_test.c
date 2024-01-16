@@ -26,8 +26,7 @@ ret_code run_crc_table(int argc, char **argv)
     return 0;
 }
 
-static const menu_option_t m_memu_opt[] =
-{
+static const menu_option_t m_memu_opt[] = {
     {"--help",                      '-',    NULL,                       "Display this summary.",},
     {"--run",                       '-',    run_c_test,                 "Run C test.",},
     {"--crc32",                     '-',    run_crc32,                  "Run CRC32 test.",},
@@ -60,4 +59,4 @@ ret_code menu_func_c_test(int argc, char **argv)
 }
 
 const menu_option_t  menu_config_c_test =
-    {"c-test",  's',    menu_func_c_test,   "Test different functions"};
+{"c-test",  's',    menu_func_c_test,   "Test different functions"};
