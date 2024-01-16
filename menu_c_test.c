@@ -10,7 +10,8 @@ ret_code run_c_test(int argc, char **argv)
 extern int crc32_main(char *data);
 ret_code run_crc32(int argc, char **argv)
 {
-    if (argc < 4) {
+    if (argc < 4)
+    {
         printf("Usage: %s \"some string\"\n", argv[0]);
         return -1;
     }
@@ -42,14 +43,17 @@ ret_code menu_func_c_test(int argc, char **argv)
     const char *func_name = menu_config_c_test.name;
 
     ret = menu_opt_check(m_memu_opt);
-    if (ret != MENU_RET_SUCCESS) {
+    if (ret != MENU_RET_SUCCESS)
+    {
         printf("menu_opt_check failed (%d)\n", ret);
         exit(ret);
     }
 
     ret = menu_opt_process(argc, argv, func_name, m_memu_opt);
-    if (ret != MENU_RET_SUCCESS) {
-        if (ret != MENU_RET_EOF) {
+    if (ret != MENU_RET_SUCCESS)
+    {
+        if (ret != MENU_RET_EOF)
+        {
             printf("menu_opt_process failed (%d)\n", ret);
             menu_func_help(func_name, m_memu_opt);
             exit(ret);
@@ -60,4 +64,4 @@ ret_code menu_func_c_test(int argc, char **argv)
 }
 
 const menu_option_t  menu_config_c_test =
-    {"c-test",  's',    menu_func_c_test,   "Test different functions"};
+{"c-test",  's',    menu_func_c_test,   "Test different functions"};

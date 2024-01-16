@@ -22,7 +22,7 @@
     do {                                                    \
         if (!(cond)) {                                      \
             printf("[%s][%s][%d] assertion failed!\n",      \
-                    __FILE__, __FUNCTION__, __LINE__);      \
+                   __FILE__, __FUNCTION__, __LINE__);      \
             while(1);                                       \
         }                                                   \
     } while(0)
@@ -54,7 +54,7 @@ typedef struct _menu_option_t
     const char *name;
     // int code;
     int arg_type;
-    ret_code (*oper)(int argc, char **argv);
+    ret_code(*oper)(int argc, char **argv);
     const char *help_str;
     const char *usage;
 } menu_option_t;
@@ -75,7 +75,7 @@ ret_code menu_get_char(void);
 // ret_code menu_process(int menu_func_code);
 
 // ret_code menu_opt_init(int argc, char **argv, int i, const menu_option_t *menu_opt);
-ret_code menu_register(menu_option_t **menu_opt , const menu_option_t *menu_config);
+ret_code menu_register(menu_option_t **menu_opt, const menu_option_t *menu_config);
 ret_code menu_opt_init(int argc, char **argv, int i);
 ret_code menu_opt_check(const menu_option_t *menu_opt);
 ret_code menu_func_help(const char *func_name, const menu_option_t *menu_opt);

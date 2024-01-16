@@ -27,7 +27,8 @@ typedef struct _swlist_t
     u16 cnt;
 } swlist_t;
 
-struct list_head {
+struct list_head
+{
     struct list_head *next, *prev;
 };
 
@@ -43,9 +44,9 @@ static inline void INIT_LIST_HEAD(struct list_head *list)
 }
 
 static inline void __list_add(
-    struct list_head *new,
-    struct list_head *prev,
-    struct list_head *next)
+            struct list_head *new,
+            struct list_head *prev,
+            struct list_head *next)
 {
     prev->next = new;
     new->prev = prev;
@@ -55,24 +56,24 @@ static inline void __list_add(
 
 // stack
 static inline void list_add(
-    struct list_head *new,
-    struct list_head *head)
+            struct list_head *new,
+            struct list_head *head)
 {
     __list_add(new, head, head->next);
 }
 
 // queue
 static inline void list_add_tail(
-    struct list_head *new,
-    struct list_head *head
+            struct list_head *new,
+            struct list_head *head
 )
 {
     __list_add(new, head->prev, head);
 }
 
 static inline void __list_del(
-    struct list_head *prev,
-    struct list_head *next
+            struct list_head *prev,
+            struct list_head *next
 )
 {
     prev->next = next;
@@ -87,8 +88,8 @@ static inline void list_del(struct list_head *ptr)
 }
 
 static inline int list_is_last(
-    const struct list_head *list,
-    const struct list_head *head
+            const struct list_head *list,
+            const struct list_head *head
 )
 {
     return list->next == head;
@@ -123,7 +124,7 @@ static inline int list_is_singular(const struct list_head *head)
 #define list_last_entry(ptr, type, member) \
     list_entry((ptr)->prev, type, member)
 
- // use current entry to get next/prev entry
+// use current entry to get next/prev entry
 #define list_next_entry(pos, member) \
     list_entry((pos)->member.next, typeof(*(pos)), member)
 
@@ -138,23 +139,23 @@ static inline int list_is_singular(const struct list_head *head)
 
 #define list_for_each_entry(pos, head, member) \
     for (pos = list_first_entry( head, typeof(*pos), member ); \
-        &pos->member != (head); \
-        pos = list_next_entry(pos, member))
+         &pos->member != (head); \
+         pos = list_next_entry(pos, member))
 
 #define list_for_each_entry_prev(pos, head, member) \
     for (pos = list_last_entry( head, typeof(*(pos)), member ); \
-        &pos->member != (head); \
-        pos = list_prev_entry(head, member))
+         &pos->member != (head); \
+         pos = list_prev_entry(head, member))
 
 #define list_for_each_entry_cont(pos, head, member) \
     for (pos = list_next_entry(pos, member); \
-        &pos->member != (head); \
-        pos = list_next_entry(pos, member))
+         &pos->member != (head); \
+         pos = list_next_entry(pos, member))
 
 #define list_for_each_entry_prev_cont(pos, head, member) \
     for (pos = list_prev_entry(pos, member); \
-        &pos->member != (head); \
-        pos = list_prev_entry(pos,member))
+         &pos->member != (head); \
+         pos = list_prev_entry(pos,member))
 
 // ret_code menu_func_list(int argc, char **argv);
 

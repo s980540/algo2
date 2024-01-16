@@ -14,14 +14,16 @@ int gov_moi_reip_main(void)
 
     //
     fp_r = fopen(fname_r, "r");
-    if (fp_r == NULL) {
+    if (fp_r == NULL)
+    {
         printf("fopen %s failed\n", fname_r);
         goto exit;
     }
 
     //
     fp_w = fopen(fname_w, "w");
-    if (fp_w == NULL) {
+    if (fp_w == NULL)
+    {
         printf("fopen %s failed\n", fname_w);
         goto exit;
     }
@@ -33,28 +35,36 @@ int gov_moi_reip_main(void)
     //
     pos = ftell(fp_r);
     while (fgets(str_buf, STR_BUF_SIZE, fp_r) != NULL)
+    {
         fline++;
+    }
     fseek(fp_r, pos, SEEK_SET);
 
     //
     fline--;
     if (fgets(str_buf, STR_BUF_SIZE, fp_r) == NULL)
+    {
         goto exit;
+    }
 
     printf("%s", str_buf);
-#if 1
+    #if 1
     fprintf(fp_w, "%s", str_buf);
 
     //
-    while (fline--) {
+    while (fline--)
+    {
         if (fgets(str_buf, STR_BUF_SIZE, fp_r) == NULL)
+        {
             goto exit;
+        }
 
         printf("%s", str_buf);
 
         char *p, *r;
         p = str_buf;
-        for (int i = 0 ; i < 4; i++) {
+        for (int i = 0 ; i < 4; i++)
+        {
             r = strchr(p, ',') + 1;
             r[-1] = 0;
             fprintf(fp_w, "%s,", p);
@@ -63,15 +73,18 @@ int gov_moi_reip_main(void)
 
         //
         // printf("%s", p);
-        while (1) {
+        while (1)
+        {
             r = strchr(p, ',');
-            if (r == NULL) {
+            if (r == NULL)
+            {
                 fprintf(fp_w, "%s", p);
                 break;
             }
             *r = 0;
 
-            if (strcmp(p, "-") != 0) {
+            if (strcmp(p, "-") != 0)
+            {
                 char *yy, *mm, *dd;
                 int y, m, d;
                 yy = p;
@@ -87,7 +100,9 @@ int gov_moi_reip_main(void)
                 // printf("%d/%d/%d,", (y <= 1911 ? y + 1911 : y), m, d);
                 fprintf(fp_w, "%d/%d/%d,", (y <= 1911 ? y + 1911 : y), m, d);
 
-            } else {
+            }
+            else
+            {
                 // printf("%s,", p);
                 fprintf(fp_w, "%s,", p);
             }
@@ -95,7 +110,7 @@ int gov_moi_reip_main(void)
             p = r + 1;
         }
     }
-#endif
+    #endif
 exit:
     fclose(fp_r);
     fclose(fp_w);

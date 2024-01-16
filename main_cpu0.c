@@ -33,20 +33,24 @@ void *main_cpu0(void *para)
 
     /* Initialize menu option module */
     ret = menu_opt_init(argc, argv, 1);
-    if (ret != MENU_RET_SUCCESS) {
+    if (ret != MENU_RET_SUCCESS)
+    {
         printf("menu_opt_init failed (%d)\n", ret);
         goto exit;
     }
 
     ret = menu_opt_check(m_menu_opt);
-    if (ret != MENU_RET_SUCCESS) {
+    if (ret != MENU_RET_SUCCESS)
+    {
         printf("menu_opt_check failed (%d)\n", ret);
         goto exit;
     }
 
     ret = menu_opt_process(argc, argv, func_name, m_menu_opt);
-    if (ret != MENU_RET_SUCCESS) {
-        if (ret != MENU_RET_EOF) {
+    if (ret != MENU_RET_SUCCESS)
+    {
+        if (ret != MENU_RET_EOF)
+        {
             printf("menu_opt_process failed (%d)\n", ret);
             menu_func_help(func_name, m_menu_opt);
             goto exit;
@@ -72,14 +76,16 @@ void *main_cpu0(void *para)
     request.tv_sec = 0;
     request.tv_nsec = m_thread_info.sleep_nsec;
 
-    while (1) {
+    while (1)
+    {
         main_cpu0_unit_test();
 
-        if (m_thread_info.sleep_nsec) {
+        if (m_thread_info.sleep_nsec)
+        {
             ret = nanosleep(&request, NULL);
             if (ret == -1)
                 printf("nanosleep error, errno=%d [%s]\n",
-                    request.tv_nsec, errno, strerror(errno));
+                       request.tv_nsec, errno, strerror(errno));
         }
     }
 
