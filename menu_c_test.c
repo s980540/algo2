@@ -7,10 +7,31 @@ ret_code run_c_test(int argc, char **argv)
     return MENU_RET_SUCCESS;
 }
 
+extern int crc32_main(char *data);
+ret_code run_crc32(int argc, char **argv)
+{
+    if (argc < 4) {
+        printf("Usage: %s \"some string\"\n", argv[0]);
+        return -1;
+    }
+
+    return crc32_main(argv[3]);
+
+}
+
+extern int crc_table_main(void);
+ret_code run_crc_table(int argc, char **argv)
+{
+    crc_table_main();
+    return 0;
+}
+
 static const menu_option_t m_memu_opt[] =
 {
     {"--help",                      '-',    NULL,                       "Display this summary.",},
     {"--run",                       '-',    run_c_test,                 "Run C test.",},
+    {"--crc32",                     '-',    run_crc32,                  "Run CRC32 test.",},
+    {"--crc-table",                 '-',    run_crc_table,              "Run CRC table.",},
 
     {NULL}
 };
