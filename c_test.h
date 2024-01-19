@@ -13,5 +13,6 @@
 // #include "file.h"
 
 void c_test(void);
+void c_test_print_buf(void);
 
 #endif

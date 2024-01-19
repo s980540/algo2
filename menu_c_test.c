@@ -1,4 +1,5 @@
 #include "menu_c_test.h"
+#include "c_test.h"
 
 ret_code run_c_test(int argc, char **argv)
 {
@@ -57,11 +58,25 @@ ret_code run_crc_table(int argc, char **argv)
     return 0;
 }
 
+ret_code run_print_buf(int argc, char **argv)
+{
+    c_test_print_buf();
+    return 0;
+}
+
+ret_code run_bin_to_array(int argc, char **argv)
+{
+    #include "ucode.h"
+    return ucode_bin_to_array();
+}
+
 static const menu_option_t m_memu_opt[] = {
     {"--help",                      '-',    NULL,                       "Display this summary.",},
     {"--run",                       '-',    run_c_test,                 "Run C test.",},
     {"--crc32",                     '-',    run_crc32,                  "Run CRC32 test.",},
     {"--crc-table",                 '-',    run_crc_table,              "Run CRC table.",},
+    {"--print-buf",                 '-',    run_print_buf,              "Print buffer.",},
+    {"--bin-to-array",              '-',    run_bin_to_array,           "Convert bin file to an array.",},
 
     {NULL}
 };
