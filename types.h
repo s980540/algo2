@@ -17,6 +17,11 @@ typedef signed int s32;
 typedef signed long long s64;
 typedef unsigned char bool;
 
+typedef unsigned char byte;
+typedef unsigned short word;
+typedef unsigned int dword;
+typedef unsigned long long qword;
+
 typedef int ret_code;
 
 /**
@@ -49,7 +54,7 @@ enum {
     TRUE = 1
 };
 
-#define _offsetof(TYPE, MEMBER)  ((size_t)&((TYPE *)0)->MEMBER)
+#define _offsetof(type, member)  ((size_t)&((type *)0)->member)
 
 /**
  * offsetofend(TYPE, MEMBER)
@@ -57,8 +62,8 @@ enum {
  * @TYPE: The type of the structure
  * @MEMBER: The member within the structure to get the end offset of
  */
-#define _offsetend(TYPE, MEMBER) \
-    (_offsetof(TYPE, MEMBER) + sizeof(((TYPE *)0)->MEMBER))
+#define _offsetend(type, member) \
+    (_offsetof(type, member) + sizeof(((type *)0)->member))
 
 /**
  * linux/include/linux/kernel.h

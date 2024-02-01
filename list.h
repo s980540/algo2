@@ -26,9 +26,9 @@ typedef struct _swlist_t {
     u16 cnt;
 } swlist_t;
 
-struct list_head {
+typedef struct list_head {
     struct list_head *next, *prev;
-};
+} list_t;
 
 #define LIST_HEAD_INIT(name)    {&(name), &(name)}
 
@@ -103,17 +103,17 @@ static inline int list_is_singular(const struct list_head *head)
     return !list_is_empty(head) && (head->next == head->prev);
 }
 
-// #define _offsetof(TYPE, MEMBER)  ((size_t)&((TYPE *)0)->MEMBER)
+// #define _offsetof(type, member)  ((size_t)&((type *)0)->member)
 
 // #define _container_of(ptr, type, member) ({ \
 //     const typeof( ((type *)0)->member ) *__mptr = (ptr); \
 //     (type *)( (char *)__mptr - _offsetof(type, member) );})
 
-// #define list_entry(ptr, type, member) \
-//         _container_of(ptr, type, member)
-
 #define list_entry(ptr, type, member) \
-    ((type *)( (char *)(ptr) - ((size_t)&((type *)0)->member) ))
+        _container_of(ptr, type, member)
+
+// #define list_entry(ptr, type, member) \
+//     ((type *)( (char *)(ptr) - ((size_t)&((type *)0)->member) ))
 
 // use head to get the first/last entry
 #define list_first_entry(ptr, type, member) \
