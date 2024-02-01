@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <time.h>
 
 #include "types.h"
 

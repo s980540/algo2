@@ -1,6 +1,6 @@
 #include "global.h"
 
-int crc32_main(char *data, int length)
+u32 crc32(char *data, int length)
 {
 #include "crctable.out"
     const uint32_t CRC_INIT = 0xffffffffL;
@@ -13,7 +13,7 @@ int crc32_main(char *data, int length)
     crc = crc ^ XO_ROT;
 
     // printf("Input: %s\n", data);
-    printf("CRC: 0x%08x\n", crc);
+    // printf("CRC: 0x%08x\n", crc);
 
-    return 0;
+    return crc;
 }

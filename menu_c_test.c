@@ -1,4 +1,5 @@
 #include "menu_c_test.h"
+#include "crc32.h"
 
 ret_code run_c_test(int argc, char **argv)
 {
@@ -7,7 +8,6 @@ ret_code run_c_test(int argc, char **argv)
     return MENU_RET_SUCCESS;
 }
 
-extern int crc32_main(char *data, int length);
 ret_code run_crc32(int argc, char **argv)
 {
     char mic_string[] = "123456789";
@@ -21,19 +21,19 @@ ret_code run_crc32(int argc, char **argv)
     //     return -1;
     // }
 
-    // return crc32_main(argv[3]);
+    // return crc32(argv[3]);
     int length;
 
     length = sizeof(mic_string) - 1;
-    crc32_main(mic_string, length);
+    crc32(mic_string, length);
 
     length = sizeof(mic_test1);
     memset(mic_test1, 0x00, length);
-    crc32_main(mic_test1, length);
+    crc32(mic_test1, length);
 
     length = sizeof(mic_test2);
     memset(mic_test2, 0xFF, length);
-    crc32_main(mic_test2, length);
+    crc32(mic_test2, length);
 
     length = sizeof(mic_test3);
     for (int i = 0; i < length; i++) {
@@ -41,13 +41,13 @@ ret_code run_crc32(int argc, char **argv)
         // printf("%2x ", mic_test3[i]);
     }
     // printf("\n");
-    crc32_main(mic_test3, length);
+    crc32(mic_test3, length);
 
     length = sizeof(mic_test4);
     for (int i = 0; i < length; i++) {
         mic_test4[i] = length - i - 1;
     }
-    crc32_main(mic_test4, length);
+    crc32(mic_test4, length);
 }
 
 extern int crc_table_main(void);

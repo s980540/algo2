@@ -10,11 +10,15 @@ void *aligned_alloc(size_t size, u32 align)
         addr        = (size_t)ptr + align + sizeof(size_t);
         aligned_ptr = (void *)(addr - (addr % align));
         *((size_t *)aligned_ptr - 1) = (size_t)ptr;
-        // // debug
-        // printf("%4d %8x %8x %8x %8x\n",
-        //     (size >= KB ? size / KB : size), align, ptr, aligned_ptr, *((size_t *)aligned_ptr - 1));
+        // printf("[%s](%x,%x)\n", __FUNCTION__, ptr, aligned_ptr);
     } else
         return NULL;
 
     return aligned_ptr;
+}
+
+void aligned_free(void *aligned_ptr)
+{
+    // printf("[%s](%x,%x)\n", __FUNCTION__, *((size_t *)aligned_ptr - 1), aligned_ptr);
+    free((void *)(*((size_t *)aligned_ptr - 1)));
 }

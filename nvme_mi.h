@@ -7,6 +7,7 @@
 
 #define EN_NVME_MI
 
+#define OPT_NVME_MI_DEBUG_TRACE         (1)
 #define CTRL_META_ELEMENT_TYPE_MAX      (6)
 
 struct nvme_common_cmd
@@ -143,27 +144,27 @@ typedef struct _host_metadata_t
     byte buf[4094];
 } __attribute__((packed)) host_metadata_t;
 
-typedef struct _metadata_element_descriptor_t
+typedef struct _meta_ele_desc_t
 {
     byte et;            // Element Type : 5;
     byte er;            // Element Revision : 4
     byte elen[2];       // Element Length : 16
-} __attribute__((packed)) metadata_element_descriptor_t;
+} __attribute__((packed)) meta_ele_desc_t;
 
 // Controller Metadata Element Records
-typedef struct _metadata_element_record_t
+typedef struct _meta_ele_record_t
 {
     byte et;
     byte src;
     byte rsvd1[2];  // 1dw
-    short offset;
-    short length;   // 2dw
+    word offset;
+    word length;    // 2dw
     list_t entry;   // 4dw
-} __attribute__((packed)) metadata_element_record_t;
+} __attribute__((packed)) meta_ele_record_t;
 
 typedef struct _ctrl_meta_t
 {
-    metadata_element_record_t record[CTRL_META_ELEMENT_TYPE_MAX];
+    meta_ele_record_t record[CTRL_META_ELEMENT_TYPE_MAX];
     list_t valid;
     list_t empty;
     short metadata_size;
@@ -210,5 +211,8 @@ typedef enum _nvme_mi_resp_status_e
     /* 0x2b - 0xdf: reserved */
     /* 0xe0 - 0xff: vendor specific */
 } nvme_mi_resp_status_e;
+
+void nvme_mi_init(void);
+void nvme_mi_deinit(void);
 
 #endif // ~ NVME_MI_H
