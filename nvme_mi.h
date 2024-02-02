@@ -10,6 +10,11 @@
 #define OPT_NVME_MI_DEBUG_TRACE         (1)
 #define CTRL_META_ELEMENT_TYPE_MAX      (6)
 
+#define HOST_METADATA_DS_SIZE           (4096)
+#define HOST_METADATA_DS_HEAD_SIZE      (2)
+#define HOST_METADATA_BUF_MAX           (HOST_METADATA_DS_SIZE - HOST_METADATA_DS_HEAD_SIZE)
+#define HOST_META_ELE_HEAD_SIZE         (4)
+
 struct nvme_common_cmd
 {
     byte opcode;
@@ -151,7 +156,7 @@ typedef struct _meta_ele_desc_t
     byte elen[2];       // Element Length : 16
 } __attribute__((packed)) meta_ele_desc_t;
 
-// Controller Metadata Element Records
+// Metadata Element Records
 typedef struct _meta_ele_record_t
 {
     byte et;
@@ -167,6 +172,7 @@ typedef struct _ctrl_meta_t
     meta_ele_record_t record[CTRL_META_ELEMENT_TYPE_MAX];
     list_t valid;
     list_t empty;
+    word valid_cnt;
     short metadata_size;
 } ctrl_meta_t;
 

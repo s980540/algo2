@@ -83,13 +83,13 @@ word insert_md(host_metadata_t *host_metadata, word offset, byte et, word elen)
         elen--;
     }
 #if (OPT_NVME_MI_DEBUG_TRACE)
-    printf("(%4d,%4d,%4d)(%d,%d,%4d): 0x%08x,%s\n",
-        offset, i - offset, i,
+    printf("(offset: %4d, len: %4d)(et: %d, er: %d, elen: %4d): 0x%08x, %s\n",
+        offset, i - offset,
         host_metadata->buf[offset],
         host_metadata->buf[offset + 1],
         (host_metadata->buf[offset + 3] << 8) + host_metadata->buf[offset + 2],
         crc32(&host_metadata->buf[offset], i - offset),
-        &host_metadata->buf[offset + 4]);
+        &host_metadata->buf[offset + HOST_META_ELE_HEAD_SIZE]);
 #endif
     host_metadata->desc_cnt++;
 
@@ -100,15 +100,17 @@ int nvme_mi_transfer_data(dword *transfer_addr, dword transfer_size, byte is_rea
 {
     host_metadata_t *host_metadata = (void *)g_buf_tbl[0];
     memset(host_metadata, 0, sizeof(*host_metadata));
-    admin_cmd.nvme_cmd.bits.features.dword11 = 1 << 13;
+    admin_cmd.nvme_cmd.bits.features.dword11 = update_entry << 13;
 
     word offset, length;
 
+#if (OPT_NVME_MI_DEBUG_TRACE)
+    printf("[insert_md]\n");
+#endif
     offset = 0;
     while (1) {
         if ((host_metadata->desc_cnt == CTRL_META_ELEMENT_TYPE_MAX)
-        // if ((host_metadata->desc_cnt == 255)
-         || (offset >= 4090))
+         || (offset >= (HOST_METADATA_BUF_MAX - HOST_META_ELE_HEAD_SIZE)))  // 4090
             break;
 
         length = 4 + (rand() % 32) + 1;
@@ -121,42 +123,36 @@ int nvme_mi_transfer_data(dword *transfer_addr, dword transfer_size, byte is_rea
             (rand() % CTRL_META_ELEMENT_TYPE_MAX) + 1,
             length);
     }
-#if (OPT_NVME_MI_DEBUG_TRACE)
-    printf("[insert_md]\n");
-#endif
 
+#if (OPT_NVME_MI_DEBUG_TRACE)
+    printf("\n[%s] host_metadata\n", __FUNCTION__);
+#endif
     meta_ele_desc_t *md;
     byte desc_cnt = 0;
-
     offset = 0;
     while (1) {
-        if ((desc_cnt == host_metadata->desc_cnt) || (offset >= 4090))
+        if ((desc_cnt == host_metadata->desc_cnt)
+         || (offset >= (HOST_METADATA_BUF_MAX - HOST_META_ELE_HEAD_SIZE)))  // 4090
             break;
 
         md = (meta_ele_desc_t *)&(host_metadata->buf[offset]);
-        length = (md->elen[1] << 8) + md->elen[0];
+        length = sizeof(*md) + (md->elen[1] << 8) + md->elen[0];
         desc_cnt++;
         // Update the offset to the next entry.
-        offset += (sizeof(*md) + length);
+        offset += length;
 
         if (!is_et_valid(md->et) || (length == 0))
             continue;
 
-        printf("(%4d,%4d,%4d)(%d,%d,%4d): 0x%08x,%s\n",
-            ((void *)md - (void *)host_metadata->buf),
+        printf("(offset: %4d, len: %4d)(et: %d, er: %d, elen: %4d): 0x%08x, %s\n",
+            (void *)md - (void *)host_metadata->buf,
             offset - (word)((void *)md - (void *)host_metadata->buf),
-            offset,
-            md->et,
-            md->er,
-            length,
+            md->et, md->er, (md->elen[1] << 8) + md->elen[0],
             crc32(
-                &host_metadata->buf[(void *)md - (void *)host_metadata->buf],
+                (void *)md,
                 offset - (word)((void *)md - (void *)host_metadata->buf)),
-            &host_metadata->buf[((void *)md - (void *)host_metadata->buf) + 4]);
+            &host_metadata->buf[((void *)md - (void *)host_metadata->buf) + HOST_META_ELE_HEAD_SIZE]);
     }
-#if (OPT_NVME_MI_DEBUG_TRACE)
-    printf("[%s]\n", __FUNCTION__);
-#endif
 
     return 0;
 }
@@ -164,9 +160,11 @@ int nvme_mi_transfer_data(dword *transfer_addr, dword transfer_size, byte is_rea
 void nvme_mi_set_feat_controller_metadata(void)
 {
     int ret;
-    dword host_metadata_buf_addr = g_buf_tbl[0];
-    host_metadata_t *host_metadata = (void *)host_metadata_buf_addr;
-    byte ea = (admin_cmd.nvme_cmd.bits.features.dword11 >> 13) & 0x3;
+    host_metadata_t *host_metadata;
+    meta_ele_desc_t *md;
+    meta_ele_record_t *record;
+    word offset, length;
+    byte ea, desc_cnt, meta_exist;
 
     nvme_mi_set_metadata_addr();
 
@@ -175,91 +173,67 @@ void nvme_mi_set_feat_controller_metadata(void)
      * zero or more Metadata Element Descriptors.
     */
     // Transfer request data
-    if (nvme_mi_transfer_data(&host_metadata_buf_addr, 4096, 0))
+    if (nvme_mi_transfer_data(&g_buf_tbl[0], HOST_METADATA_DS_SIZE, 0))
         return;
 
-    meta_ele_desc_t *md;
-    word offset = 0, length;
-    byte desc_cnt = 0;
-
+    host_metadata = (void *)g_buf_tbl[0];
+    ea = (admin_cmd.nvme_cmd.bits.features.dword11 >> 13) & 0x3;
     if (ea == update_entry)
     {
+        offset = HOST_METADATA_DS_HEAD_SIZE;
+        length = 0;
+        desc_cnt = 0;
         while (1)
         {
-            if ((desc_cnt == host_metadata->desc_cnt) || (offset >= 4090))
+            if ((desc_cnt == host_metadata->desc_cnt)
+             || (offset >= (HOST_METADATA_DS_SIZE - HOST_META_ELE_HEAD_SIZE)))  // 4092
                 break;
 
-            md = (meta_ele_desc_t *)&host_metadata->buf[offset];
-            length = (md->elen[1] << 8) + md->elen[0];
+            md = (meta_ele_desc_t *)((void *)host_metadata + offset);
+            length = sizeof(*md) + (md->elen[1] << 8) + md->elen[0];
             desc_cnt++;
             // Update the offset to the next metadata descriptor.
-            offset += sizeof(*md) + length;
+            offset += length;
 
             if (!is_et_valid(md->et) || (length == 0))
                 continue;
 
-            meta_ele_record_t *record;
-            if (!list_is_empty(&m_ctrl_meta->valid))
-            {
-                byte meta_exist = FALSE;
-                list_for_each_entry(record, &m_ctrl_meta->valid, entry)
-                {
+            meta_exist = FALSE;
+            if (!list_is_empty(&m_ctrl_meta->valid)) {
+                list_for_each_entry(record, &m_ctrl_meta->valid, entry) {
                     /**
                      * If a Metadata Element Descriptor with the specified Element Type
                      * exists in Controller Metadata.
                     */
-                    if (md->et == record->et)
-                    {
+                    if (md->et == record->et) {
                         meta_exist = TRUE;
                         break;
                     }
                 }
+            }
 
-                // Update the existing record of metadata descriptor
-                if (meta_exist)
-                {
-                    short diff = 0;
-                    diff = length - (record->length - sizeof(*md));
-                    /**
-                     * If host software attempts to add or update a Metadata Element that
-                     * causes the stored Host Metadata data structure to grow larger than
-                     * 4 KiB, the Controller shall abort the command with an Invalid
-                     * Parameter Error Response.
-                    */
-                    if ((m_ctrl_meta->metadata_size + diff) > 4096)
-                    {
-                        g_nrcqe_dw0.invalid_param.status = NVME_MI_RESP_INVALID_PARAM;
-                        g_nrcqe_dw0.invalid_param.lsbit = 0;
-                        g_nrcqe_dw0.invalid_param.lsbyte = 2 + ((dword)md->elen - (dword)host_metadata);
-                        goto send_cq_stage;
-                    }
-
-                    // Update the m_ctrl_meta->record
-                    m_ctrl_meta->metadata_size += diff;
-                    record->offset = (void *)md - (void *)host_metadata->buf;
-                    record->length = sizeof(*md) + length;
-                    record->src = 1;
+            // Update the existing record of metadata descriptor
+            if (meta_exist)
+            {
+                short diff = length - record->length;
+                /**
+                 * If host software attempts to add or update a Metadata Element that
+                 * causes the stored Host Metadata data structure to grow larger than
+                 * 4 KiB, the Controller shall abort the command with an Invalid
+                 * Parameter Error Response.
+                */
+                if ((m_ctrl_meta->metadata_size + diff) > HOST_METADATA_BUF_MAX) { // 4094
+                    g_nrcqe_dw0.invalid_param.status = NVME_MI_RESP_INVALID_PARAM;
+                    g_nrcqe_dw0.invalid_param.lsbit = 0;
+                    g_nrcqe_dw0.invalid_param.lsbyte = 2 + ((dword)md->elen - (dword)host_metadata);
+                    goto send_cq_stage;
                 }
-                else
-                {
-                    // Get an unused record from the empty list.
-                    record = list_first_entry(
-                        &m_ctrl_meta->empty,
-                        meta_ele_record_t,
-                        entry);
 
-                    list_del(&record->entry);
-
-                    // Update the information of the metadata descriptor for the record.
-                    record->et = md->et;
-                    record->offset = (void *)md - (void *)host_metadata->buf;
-                    record->length = sizeof(*md) + length;
-                    record->src = 1;
-                    m_ctrl_meta->metadata_size += record->length;
-
-                    // And then, push the record to the valid list.
-                    list_add_tail(&record->entry, &m_ctrl_meta->valid);
-                }
+                // Update the information of the metadata descriptor for the record.
+                record->offset = (void *)md - (void *)host_metadata;
+                record->length = length;
+                record->src = 1;
+                m_ctrl_meta->metadata_size += diff;
             }
             // Creates a new record of metadata descriptor
             else
@@ -274,26 +248,87 @@ void nvme_mi_set_feat_controller_metadata(void)
 
                 // Update the information of the metadata descriptor for the record.
                 record->et = md->et;
-                record->offset = (void *)md - (void *)host_metadata->buf;
-                record->length = sizeof(*md) + length;
+                record->offset = (void *)md - (void *)host_metadata;
+                record->length = length;
                 record->src = 1;
                 m_ctrl_meta->metadata_size += record->length;
+                m_ctrl_meta->valid_cnt++;
 
                 // And then, push the record to the valid list.
                 list_add_tail(&record->entry, &m_ctrl_meta->valid);
             }
-        }
+        } // ~ while (1)
+
+        dword dst_addr, src_addr;
     #if (OPT_NVME_MI_DEBUG_TRACE)
-        meta_ele_record_t *record = NULL;
-        list_for_each_entry(record, &m_ctrl_meta->valid, entry)
-        {
-            printf("(%d,%4d,%4d): 0x%08x,%s\n",
-                record->et,
-                record->offset,
-                record->length,
-                crc32(&host_metadata->buf[record->offset], record->length),
-                &host_metadata->buf[record->offset + 4]);
+        printf("\n[meta_record]\n");
+        list_for_each_entry(record, &m_ctrl_meta->valid, entry) {
+            src_addr = (record->src
+                ? (dword)((void *)host_metadata + record->offset)
+                : (dword)(m_ctrl_meta_buf_addr + record->offset));
+
+            printf("(src: %d, et: %d, offset: %4d, len: %4d, elen: %4d): 0x%08x, %s\n",
+                record->src, record->et, record->offset, record->length, record->length - HOST_META_ELE_HEAD_SIZE,
+                crc32(((void *)host_metadata + record->offset), record->length),
+                (void*)(src_addr + HOST_META_ELE_HEAD_SIZE));
         }
+    #endif
+
+        memset((void *)m_swap_buf_addr, 0, HOST_METADATA_DS_SIZE);
+        // Set the number of metadata element descriptors
+        *((byte *)m_swap_buf_addr) = m_ctrl_meta->valid_cnt;
+        offset = HOST_METADATA_DS_HEAD_SIZE;
+        list_for_each_entry(record, &m_ctrl_meta->valid, entry) {
+            dst_addr = m_swap_buf_addr + offset;
+            src_addr = record->src
+                ? (dword)((void *)host_metadata + record->offset)
+                : (dword)(m_ctrl_meta_buf_addr + record->offset);
+
+            memcpy((void *)dst_addr, (void *)src_addr, record->length);
+
+            record->offset = offset;
+            record->src = 0;
+            offset += record->length;
+        }
+
+        dword temp = m_swap_buf_addr;
+        m_swap_buf_addr = m_ctrl_meta_buf_addr;
+        m_ctrl_meta_buf_addr = temp;
+
+    #if (OPT_NVME_MI_DEBUG_TRACE)
+        printf("\n[m_ctrl_meta_buf_addr]\n");
+        offset = HOST_METADATA_DS_HEAD_SIZE;
+        desc_cnt = 0;
+        while (1) {
+            if ((desc_cnt == m_ctrl_meta->valid_cnt)
+             || (offset >= (HOST_METADATA_DS_SIZE - HOST_META_ELE_HEAD_SIZE))) // 4092
+                break;
+
+            md = (meta_ele_desc_t *)(m_ctrl_meta_buf_addr + offset);
+            length = sizeof(*md) + (md->elen[1] << 8) + md->elen[0];
+            desc_cnt++;
+            // Update the offset to the next entry.
+            offset += length;
+
+            if (!is_et_valid(md->et) || (length == 0))
+                continue;
+
+            printf("(offset: %4d, len: %4d)(et: %d, er: %d, elen: %4d): 0x%08x, %s\n",
+                ((dword)md - m_ctrl_meta_buf_addr),
+                offset - (word)((dword)md - m_ctrl_meta_buf_addr),
+                md->et, md->er, (md->elen[1] << 8) + md->elen[0],
+                crc32((void *)md, offset - (word)((dword)md - m_ctrl_meta_buf_addr)),
+                (void *)((dword)md + HOST_META_ELE_HEAD_SIZE));
+        }
+
+        printf("\n[new meta_record]\n");
+        list_for_each_entry(record, &m_ctrl_meta->valid, entry) {
+            printf("(src: %d, et: %d, offset: %4d, len: %4d, elen: %4d): 0x%08x, %s\n",
+                record->src, record->et, record->offset, record->length, record->length - HOST_META_ELE_HEAD_SIZE,
+                crc32((void *)(m_ctrl_meta_buf_addr + record->offset), record->length),
+                (void *)(m_ctrl_meta_buf_addr + record->offset + HOST_META_ELE_HEAD_SIZE));
+        }
+
     #endif
     }
     else if (ea == delete_entry)
@@ -330,6 +365,8 @@ void nvme_mi_init(void)
 
     // nvme_mi_transfer_data(0, 0, 0);
     nvme_mi_set_feat_controller_metadata();
+    // nvme_mi_set_feat_controller_metadata();
+    // nvme_mi_set_feat_controller_metadata();
 }
 
 void nvme_mi_deinit(void)
